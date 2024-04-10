@@ -1,0 +1,75 @@
+
+base:
+  epochs: 1
+  verbose: 1
+  save_path: "./weights"
+  seed: 42069
+  device: "cuda:0"
+  amp: 1
+  validate_every: 0.1
+  pretrain: .3
+  warmup: .5
+
+dataset:
+  image_location: "TODO"
+  quality_location: "./data/diffiqar_baseline_quality.pkl" 
+  landms_location: "./data/landmarks_data.pkl"
+  misalign: 1
+  val_percent: 0.01
+
+dataloader:
+  train:
+    params:
+      batch_size: 64
+      shuffle: 1
+      pin_memory: 1
+      num_workers: 10
+  val:
+    params:
+      batch_size: 64
+      pin_memory: 1
+      num_workers: 10
+
+model:
+  config: "./configs/model_config.yaml"
+
+ema:
+  module: torch.optim.swa_utils.SWALR 
+  params:
+    anneal_strategy: 'linear'
+    anneal_epochs: 10
+    swa_lr: 0.05
+  ema_alpha: 0.1
+
+scheduler:
+  module: torch.optim.lr_scheduler.LambdaLR
+
+grad_scaler:
+  module: torch.cuda.amp.GradScaler
+  params:
+    init_scale: 128
+
+optimizer:
+  module: "torch.optim.SGD"
+  group_1:
+    params: "quality_head"
+    lr: 0.05
+    weight_decay: 5.e-4 
+    momentum: 0.9
+  group_2:
+    params: "feature_extractor"
+    lr: 0.05
+    limit: 100
+    momentum: 0.1
+
+loss:
+  quality: 
+    module: "torch.nn.SmoothL1Loss"
+    params:
+      beta: 0.5
+  consistency:
+    module: "torch.nn.CosineEmbeddingLoss"
+
+wandb:
+  use: 0
+  project: "ai-kd"

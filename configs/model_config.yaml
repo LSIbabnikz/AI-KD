@@ -1,0 +1,24 @@
+
+
+model:
+  features:
+    module: model.iresnet.iresnet100
+    weights: "./weights/r100.pth"
+    params:
+  head:
+    module: model.mlp.MLP
+    params:
+  wrapper:
+    module: model.ai_kd.WrapperModel
+  transform:
+    trans_1:
+      module: "torchvision.transforms.Resize"
+      params:
+        size: [112, 112]
+    trans_2:
+      module: "torchvision.transforms.ToTensor"
+    trans_3:
+      module: "torchvision.transforms.Normalize"
+      params: 
+        mean: [.5, .5, .5]
+        std: [.5, .5, .5]
